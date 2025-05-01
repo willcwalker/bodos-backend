@@ -1,5 +1,16 @@
+# app.py (top)
+# ──────────────────────────────────────────────────────────────────────
+# Monkey-patch BitGenerator mapping so MT19937 can be unpickled
+try:
+    import numpy.random._pickle as _nprp
+    # Ensure the module path matches where MT19937 actually lives
+    _nprp.BIT_GENERATOR_MAPPING['MT19937'] = 'numpy.random._mt19937.MT19937'
+except Exception:
+    pass
+
+import joblib, json, numpy as np, pandas as pd
 from fastapi import FastAPI, Query, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
+# ... rest of your imports
 from datetime import datetime
 import joblib, json, numpy as np, pandas as pd
 
