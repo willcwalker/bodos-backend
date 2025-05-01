@@ -2,26 +2,21 @@ try:
     import numpy.random._pickle as _nprp
     import numpy.random._mt19937 as _mt
 
-    # 1) Map the string name if missing (just in case)
-    _nprp.BitGenerators['MT19937'] = _mt.MT19937
-
-    # 2) Wrap the __bit_generator_ctor to swallow class objects
+    # save the original one-arg ctor
     _orig_ctor = _nprp.__bit_generator_ctor
 
-    def _patched_ctor(unpickler, bitgen_id):
-        # If they gave us the class instead of the string, just call it
-        if isinstance(bitgen_id, type) and issubclass(bitgen_id, _mt.MT19937):
-            return bitgen_id()
-        # Otherwise fall back to the normal logic
-        return _orig_ctor(unpickler, bitgen_id)
+    def __bit_generator_ctor(bit_generator_name='MT19937'):
+        # if they passed us the class, just instantiate it
+        if isinstance(bit_generator_name, type) and issubclass(bit_generator_name, _mt.MT19937):
+            return bit_generator_name()
+        # otherwise delegate back to the original name lookup
+        return _orig_ctor(bit_generator_name)
 
-    _nprp.__bit_generator_ctor = _patched_ctor
+    # override numpy's private ctor
+    _nprp.__bit_generator_ctor = __bit_generator_ctor
 
 except Exception:
-    # If any of that fails (unusual NumPy layout), we'll still try to load—
-    # it’ll error later if truly unrecoverable.
     pass
-# ──────────────────────────────────────────────────────────────────────
 
 import joblib
 import json
