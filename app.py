@@ -3,16 +3,19 @@
 # Monkey-patch BitGenerator mapping so MT19937 can be unpickled
 try:
     import numpy.random._pickle as _nprp
-    # Ensure the module path matches where MT19937 actually lives
-    _nprp.BIT_GENERATOR_MAPPING['MT19937'] = 'numpy.random._mt19937.MT19937'
+    import numpy.random._mt19937 as _mt
+    # Point the loader at the real MT19937 class object
+    _nprp.BitGenerators['MT19937'] = _mt.MT19937
 except Exception:
     pass
 
-import joblib, json, numpy as np, pandas as pd
+import joblib
+import json
+import pandas as pd
+import numpy as np
 from fastapi import FastAPI, Query, HTTPException
-# ... rest of your imports
+from fastapi.middleware.cors import CORSMiddleware
 from datetime import datetime
-import joblib, json, numpy as np, pandas as pd
 
 MODEL  = joblib.load("interval_model.pkl")
 PARAMS = json.load(open("wait_params.json"))
